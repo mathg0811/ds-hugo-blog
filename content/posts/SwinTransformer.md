@@ -9,12 +9,63 @@ description = 'SwinTransformer'  # 페이지 설명
 images = ['/images/huggingface.jpg']  # 대표 이미지 
 +++
 
-# Swin Transformer
-Introduced in the 2021 paper, [Swin Transformer: Hierarchical Vision Transformer using Shifted Windows](https://arxiv.org/pdf/2103.14030.pdf), the Swin Transformer architecture optimizes for latency and performance using a shifted window (as opposed to sliding window) approach which reduces the number of operations required. Swin is considered a **hierarchical backbone** for computer vision. Swin can be used for tasks like image classification.
 
-<Tip>
+# Swin Transformer  
 
-A backbone, in terms of deep learning, is a part of a neural network that does feature extraction. Additional layers can be added to the backbone to do a variety of vision tasks. Hierarchical backbones have tiered structures, sometimes with varying resolutions. This is in contrast to the non-hierarchical **plain backbone** in [VitDet](https://arxiv.org/abs/2203.16527) model.
+Introduced in the 2021 paper, [Swin Transformer: Hierarchical Vision Transformer using Shifted Windows](https://arxiv.org/pdf/2103.14030.pdf), the Swin Transformer architecture optimizes latency and performance by using a shifted window approach, which reduces the number of operations compared to traditional sliding windows. Swin Transformer is considered a **hierarchical backbone** for computer vision.
+
+Unlike traditional Vision Transformers (ViT), which struggle with computational complexity and fixed-scale features, Swin Transformer introduces a **hierarchical design** and **shifted window attention** to efficiently handle multi-scale visual data. By combining the flexibility of Transformers with the scalability of CNNs, it achieves state-of-the-art results across image classification, object detection, and semantic segmentation tasks.
+
+---
+
+**My take:**  
+Scalability isn’t optional in vision—it’s the price of admission. Swin Transformer elegantly meets this demand, unlocking Transformers for high-resolution medical imaging, video analysis, and beyond. While Transformers excel at **modeling relationships between features through self-attention**, CNNs have historically dominated **multi-scale feature extraction via hierarchical layers**. The future isn’t CNNs versus Transformers—it’s architectures like Swin that **combine the strengths of both**: leveraging attention’s ability to **dynamically capture feature dependencies** while adopting CNN-like **pyramidal downsampling** for scalable multi-resolution processing. Swin Transformer demonstrates how to **integrate and refine** established design philosophies by deeply understanding both the task (e.g., object detection) and the environment (e.g., GPU memory constraints).
+
+---
+
+## Design Concept
+### **Why Scalability Defines Swin’s Success**  
+Traditional Transformers excel in NLP by processing fixed-scale tokens (words), but this approach fails in vision. Images demand **multi-scale reasoning**—a distant car, a rotated sign, or a high-resolution texture all require adaptive feature extraction. Swin Transformer addresses this by reimagining attention mechanisms with **scalability at its core**, bridging the gap between CNNs and Transformers.
+
+---
+
+### **The Scalability Crisis in Vision Transformers**  
+- **Fixed Tokens ≠ Visual Reality**:  
+  ViT processes images as rigid 16×16 patches, forcing a single-scale representation. Real-world vision requires hierarchical features, from pixels to objects.  
+- **Quadratic Computational Complexity**:  
+  Global self-attention in ViT becomes computationally prohibitive for high-resolution images (e.g., 4K video or medical scans).  
+
+---
+
+### **Swin’s Scalability Solutions**  
+#### 1. **Hierarchical Feature Pyramids**  
+Swin mimics CNNs by merging patches in deeper layers (4×4 → 8×8 → 16×16), creating multi-scale feature maps. This enables seamless integration with vision techniques like Feature Pyramid Networks (FPN) for object detection.  
+#### 2. **Shifted Window Attention**  
+Self-attention is computed within **local windows** (e.g., 7×7 patches) that shift in alternating layers. This reduces complexity to linear scaling while enabling cross-window communication.  
+
+---
+
+### **Swin Transformer vs. ViT: Scalability Showdown**  
+| Feature                | Swin Transformer (Scalability First)               | Vision Transformer (ViT)                     |
+|------------------------|----------------------------------------------------|----------------------------------------------|
+| **Scale Handling**      | Multi-stage merging (CNN-like hierarchy)           | Fixed 16×16 patches                          |
+| **Attention Scope**     | Local windows + cross-window shifts                | Global across all patches                    |
+| **Complexity**          | Linear with image size                             | Quadratic with image size                    |
+| **Backbone Flexibility**| Plug-and-play for FPN, U-Net, etc.                 | Requires task-specific adaptations           |
+| **Real-World Performance** | 63.1 COCO box AP (V2), 59.9 mIoU on ADE20K | Lower accuracy on dense tasks (+2.7 AP gap)  |
+
+---
+
+**Swin Variants & Related Models**  
+- **SwinV2** ([paper](https://arxiv.org/abs/2111.09883)): Improved training stability and support for higher-resolution images (up to 1536×1536) with Res-Post-Norm and scaled cosine attention.  
+- **SwinIR** ([paper](https://arxiv.org/abs/2108.10257)): A Swin Transformer-based model tailored for image restoration tasks like super-resolution and denoising.  
+- **Swin2SR** ([paper](https://arxiv.org/abs/2209.09345)): An enhanced and lightweight version of SwinIR optimized for real-time image super-resolution.  
+- **Swin-UNETR** ([paper](https://arxiv.org/abs/2103.14030)): Combines Swin Transformer with U-Net architecture for 3D medical image segmentation.  
+- **CSWin Transformer** ([paper](https://arxiv.org/abs/2107.00652)): Introduces cross-shaped window attention to overcome local window limitations in Swin.
+
+Each of these variants builds upon the hierarchical design and shifted window mechanism of the original Swin Transformer, adapting it to specific vision tasks and improving performance or efficiency accordingly.
+
+---
 
 </Tip>
 
@@ -31,21 +82,7 @@ Swin is more performant than completely patch-based approaches like ViT.
 ### Large datasets
 SwinV2 is one of the first 3B parameter models. As training size goes up, Swin outperforms CNN. The large number of parameters enables increased capacity for learning and more complex representations.
 
-
-## Swin Transformer V2 [(paper)](https://arxiv.org/abs/2111.09883)
-Swin Transformer V2 is a large vision model that can support up to 3B parameters and capable of training with high resolution images. It improves upon the original Swin Transformer by stabilizing training, transfer models pre-trained with low-resolution images to high-resolution tasks, and using [SimMIM](https://arxiv.org/abs/2111.09886), a self-supervised training approach that reduces the number of labeled images required for training.
-
-## Applications in Image Restoration
-
-### SwinIR [(paper)](https://arxiv.org/abs/2108.10257)
-SwinIR is a model for turning low resolution images into high resolution images based on Swin Transformer.
-
-### Swin2SR  [(paper)](https://arxiv.org/abs/2209.11345)
-Swin2SR is another image restoration model. It is an improvement on SwinIR by incorporating Swin Transformer V2, applying the benefits of Swin V2 like training stability and higher image resolution capacity.
-
-
 ## Overview of PyTorch Implementation of Swin
-Key parts of the [implementation of Swin from the original paper](https://github.com/microsoft/Swin-Transformer/blob/main/models/swin_transformer.py) is outlined below:
 
 ### Swin Transformer class
 1. **Initialize Parameters**. Among various other dropout and normalization parameters, these parameters include:
@@ -609,6 +646,34 @@ with torch.no_grad():
 
 predicted_label_id = logits.argmax(-1).item()
 predicted_label_text = model.config.id2label[predicted_label_id]
+
+print(predicted_label_text)
+```
+
+---
+
+## Model Comparision Tables
+
+**Table 1: Swin Variants Comparison**  
+| Model          | Params | FLOPs (G) | ImageNet Top-1 | Key Features |
+|----------------|---------|-----------|------------------|--------------|
+| **Swin-T**     | 28M     | 4.5       | 81.3%            | Base hierarchical window design |
+| **Swin-S**     | 50M     | 8.7       | 83.0%            | Mid-scale variant |
+| **Swin-B**     | 88M     | 15.4      | 83.5%            | Outperforms DeiT-B by +1.5% |
+| **SwinV2-G**   | 3B      | -         | 84.0% (ImageNet-V2) | Supports 1,536×1,536 resolution |
+| **CSWin-T**    | 23M     | 4.3       | 82.7%            | Cross-shaped window attention |
+
+
+**Table 2: CNN vs Transformer Comparison**  
+| Model             | Params | FLOPs (G) | ImageNet Top-1 | Key Traits |
+|-------------------|---------|-----------|------------------|------------|
+| **ResNet-50**     | 25M     | 4.1       | 76.1%            | CNN baseline |
+| **EfficientNet-B4** | 19M   | 4.2       | 82.9%            | Mobile-optimized |
+| **ConvNeXt-T**    | 28M     | 4.5       | 82.1%            | Modern CNN SOTA |
+| **DeiT-S**        | 22M     | 4.6       | 79.8%            | ViT baseline |
+| **Swin-T**        | 28M     | 4.5       | 81.3%            | Hierarchical windows |
+| **CSWin-T**       | 23M     | 4.3       | 82.7%            | Cross-shaped windows |
+
 
 print(predicted_label_text)
 ```
